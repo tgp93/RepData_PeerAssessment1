@@ -3,7 +3,8 @@ title: "Course 5 Project 1"
 author: "Thales Gonçalves"
 date: "2/14/2021"
 output:
-  html_document: default
+  html_document: 
+    keep_md: yes
   pdf_document: default
 ---
 
