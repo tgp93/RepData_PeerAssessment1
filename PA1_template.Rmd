@@ -1,25 +1,83 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Course 5 Project 1"
+author: "Thales Gonçalves"
+date: "2/14/2021"
+output:
+  html_document: default
+  pdf_document: default
 ---
 
+```{r, echo = TRUE}
+activity <- read.csv("activity.csv")
+library(dplyr)
+library(lattice)
+```
 
-## Loading and preprocessing the data
-
-
-
-## What is mean total number of steps taken per day?
-
-
-
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
+```{r, echo = TRUE}
+steps_sum <- summarize(group_by(activity, date), 
+                          "total steps per day" = sum(steps, na.rm = TRUE))
+```
 
 
+```{r hist1, echo=TRUE}
+hist(steps_sum$`total steps per day`, breaks = 4, ylim = c(0, 30),
+     main = "Frequency range of total daily steps", las = 1, 
+     xlab = "Grouped total steps per day")
+```
 
-## Are there differences in activity patterns between weekdays and weekends?
+```{r, echo = TRUE}
+mean(steps_sum$`total steps per day`)
+median(steps_sum$`total steps per day`)
+```
+
+```{r, echo = TRUE}
+steps_mean <- summarize(group_by(activity, interval), 
+                        "average steps per interval" = mean(steps, na.rm = TRUE))
+```
+
+```{r plot1, echo = TRUE}
+plot(steps_mean, type = "l", xlim = c(0, 2400), 
+     main = "Average steps taken per interval", las = 1)
+```
+
+```{r, echo = TRUE}
+steps_mean[which.max(steps_mean$`average steps per interval`),]
+sum(is.na(activity))
+```
+
+```{r, echo = TRUE}
+activity2 <- activity
+activity2$groupmeans <- steps_mean$`average steps per interval`
+activity2$steps <- ifelse(is.na(activity2$steps), 
+                          activity2$steps <- activity2$groupmeans, 
+                          activity2$steps <- activity$steps)
+
+steps_sum2 <- summarize(group_by(activity2, date), 
+                       "total steps per day" = sum(steps, na.rm = TRUE))
+```
+
+```{r hist2, echo = TRUE}
+hist(steps_sum2$`total steps per day`, breaks = 4,
+     main = "Frequency range of total daily steps", las = 1, 
+     xlab = "Grouped total steps per day")
+```
+
+```{r, echo = TRUE}
+mean(steps_sum2$`total steps per day`)
+median(steps_sum2$`total steps per day`)
+```
+
+```{r, echo = TRUE}
+activity2$weekday <- weekdays(as.Date(activity2$date))
+activity2$weekday2 <- "weekday"
+activity2[activity2$weekday %in% c('Saturday', 'Sunday'),]$weekday2 <- "weekend"
+
+steps_mean2 <- summarize(group_by(activity2, interval, weekday2), 
+                        "average steps per interval" = mean(steps, na.rm = TRUE))
+```
+
+```{r plot2, echo = TRUE}
+xyplot(`average steps per interval` ~ interval|weekday2, data = steps_mean2, 
+       type = "l", main = "Average steps per weekday group")
+```
+
